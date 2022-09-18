@@ -2,14 +2,14 @@
 ```
 docker pull mysql:5.7
 ```
-##1.master（主）配置
-####1) 创建文件夹
+## 1.master（主）配置
+#### 1) 创建文件夹
 ```
 mkdir -p /opt/mysql/mysql-master
 mkdir -p /opt/mysql/mysql-master/conf.d
 mkdir -p /opt/mysql/mysql-master/data
 ```
-####2) 创建my.cnf配置文件
+#### 2) 创建my.cnf配置文件
 ```
 cd /opt/mysql/mysql-master
 echo '[mysqld]
@@ -38,15 +38,15 @@ log-bin=mysql-bin
 default-character-set=utf8  # 设置mysql客户端默认字符集
 ' > my.cnf
 ```
-####3) 运行mysql
+#### 3) 运行mysql
 ```
 docker run --name mysql_server_3310 -d -p 3310:3306 --restart=always -v /opt/mysql/mysql-master/data/:/var/lib/mysql -v /opt/mysql/mysql-master/conf.d:/etc/mysql/conf.d -v /opt/mysql/mysql-master/my.cnf:/etc/mysql/my.cnf -e MYSQL_ROOT_PASSWORD=root mysql:5.7
 ```
-####4) 进入容器
+#### 4) 进入容器
 ```
 docker exec -it mysql_server_3310 /bin/bash
 ```
-####5) 创建同步用户slave，并授权
+#### 5) 创建同步用户slave，并授权
 ```
 mysql -uroot -proot
 CREATE USER 'slave'@'%' IDENTIFIED BY '123456';
@@ -57,7 +57,7 @@ GRANT REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO 'slave'@'%';
 FLUSH PRIVILEGES;
 ```
 
-##2.slave(从)配置
+## 2.slave(从)配置
 #### 创建所需文件夹，用于映射容器相应文件路径
 ```
 mkdir -p /opt/mysql/mysql-slave
@@ -100,8 +100,8 @@ default-character-set=utf8  # 设置mysql客户端默认字符集
 docker run --name mysql_server_3311 -d -p 3311:3306 --restart=always -v /opt/mysql/mysql-slave/data/:/var/lib/mysql -v /opt/mysql/mysql-slave/conf.d:/etc/mysql/conf.d -v /opt/mysql/mysql-slave/my.cnf:/etc/mysql/my.cnf -e MYSQL_ROOT_PASSWORD=root mysql:5.7
 ```
 
-##3.关联master和slave
-####1) 在master服务器中进入mysql查看master状态
+## 3.关联master和slave
+#### 1) 在master服务器中进入mysql查看master状态
 ```
 -- 进入master mysql
 docker exec -it mysql_server_3310 /bin/bash
@@ -109,7 +109,7 @@ mysql -uroot -proot
 -- 查看状态
 show master status;
 ```
-####2) 在slave服务器中进入mysql，启动主从同步
+#### 2) 在slave服务器中进入mysql，启动主从同步
 ```
 docker exec -it mysql_server_3310 /bin/bash
 mysql -uroot -proot
@@ -128,15 +128,15 @@ start slave;
 # 查看主从同步状态
 show slave status \G;
 ```
-##4.设置允许从虚拟机网关访问数据库
-####1) 主库设置
+## 4.设置允许从虚拟机网关访问数据库
+#### 1) 主库设置
 ```
 docker exec -it mysql_server_3310 /bin/bash
 mysql -uroot -proot
 GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '123456' WITH GRANT OPTION;
 FLUSH PRIVILEGES;
 ```
-####2) 从库设置
+#### 2) 从库设置
 主库设置完成后，从库会自动同步配置
 
 备注：如果从库同步主库SQL异常，可以尝试如下命令解决
@@ -146,12 +146,12 @@ FLUSH PRIVILEGES;
 > START SLAVE;
 ```
 
-##5.分库分表实践
-####创建订单库 order_db
+## 5.分库分表实践
+#### 创建订单库 order_db
 ```
 CREATE DATABASE `order_db` CHARACTER SET 'utf8' COLLATE 'utf8_general_ci';
 ```
-####在order_db中创建t_order_1、t_order_2表
+#### 在order_db中创建t_order_1、t_order_2表
 ```
 USE `order_db`;
 DROP TABLE IF EXISTS `t_order_1`;
