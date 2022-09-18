@@ -172,7 +172,50 @@ CREATE TABLE `t_order_2`  (
 ) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
 ```
 
+#### 添加sharding-jdbc依赖
+```
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <version>5.1.48</version>
+</dependency>
 
+<dependency>
+    <groupId>com.alibaba</groupId>
+    <artifactId>druid-spring-boot-starter</artifactId>
+    <version>1.2.12</version>
+</dependency>
+
+<dependency>
+    <groupId>org.apache.shardingsphere</groupId>
+    <artifactId>sharding-jdbc-spring-boot-starter</artifactId>
+    <version>4.1.1</version>
+</dependency>
+```
+
+#### 添加sharding-jdbc配置
+```
+# 定义数据源
+spring.shardingsphere.datasource.names=m1
+spring.shardingsphere.datasource.m1.type=com.alibaba.druid.pool.DruidDataSource
+spring.shardingsphere.datasource.m1.driver‐class‐name=com.mysql.cj.jdbc.Driver
+spring.shardingsphere.datasource.m1.url=jdbc:mysql://192.168.126.135:3310/order_db?useUnicode=true&characterEncoding=utf8&useSSL=true&serverTimezone=Asia/Shanghai
+spring.shardingsphere.datasource.m1.username=root
+spring.shardingsphere.datasource.m1.password=123456
+# 指定t_order表的数据分布情况，配置数据节点
+spring.shardingsphere.sharding.tables.t_order.actual-data-nodes=m1.t_order_$‐>{1..2}
+# 指定t_order表的主键生成策略为SNOWFLAKE
+spring.shardingsphere.sharding.tables.t_order.key-generator.column=order_id
+spring.shardingsphere.sharding.tables.t_order.key-generator.type=SNOWFLAKE
+# 指定t_order表的分片策略，分片策略包括分片键和分片算法
+spring.shardingsphere.sharding.tables.t_order.table-strategy.inline.sharding-column=order_id
+spring.shardingsphere.sharding.tables.t_order.table-strategy.inline.algorithm-expression=t_order_$‐>{order_id % 2 + 1}
+
+# 打开sql输出日志
+spring.shardingsphere.props.sql.show=true
+logging.level.root=info
+logging.level.org.springframework.web=info
+```
 
 
 阿里云脚手架：https://start.aliyun.com/bootstrap.html/
