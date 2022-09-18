@@ -181,9 +181,9 @@ CREATE TABLE `t_order_2`  (
 </dependency>
 
 <dependency>
-    <groupId>com.alibaba</groupId>
-    <artifactId>druid-spring-boot-starter</artifactId>
-    <version>1.2.12</version>
+	<groupId>com.alibaba</groupId>
+	<artifactId>druid</artifactId>
+	<version>1.2.12</version>
 </dependency>
 
 <dependency>
