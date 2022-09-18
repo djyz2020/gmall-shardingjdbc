@@ -181,9 +181,9 @@ CREATE TABLE `t_order_2`  (
 </dependency>
 
 <dependency>
-	<groupId>com.alibaba</groupId>
-	<artifactId>druid</artifactId>
-	<version>1.2.12</version>
+    <groupId>com.alibaba</groupId>
+    <artifactId>druid</artifactId>
+    <version>1.2.12</version>
 </dependency>
 
 <dependency>
@@ -203,13 +203,13 @@ spring.shardingsphere.datasource.m1.url=jdbc:mysql://192.168.126.135:3310/order_
 spring.shardingsphere.datasource.m1.username=root
 spring.shardingsphere.datasource.m1.password=123456
 # 指定t_order表的数据分布情况，配置数据节点
-spring.shardingsphere.sharding.tables.t_order.actual-data-nodes=m1.t_order_$‐>{1..2}
+spring.shardingsphere.sharding.tables.t_order.actual-data-nodes=m1.t_order_$->{1..2}
 # 指定t_order表的主键生成策略为SNOWFLAKE
 spring.shardingsphere.sharding.tables.t_order.key-generator.column=order_id
 spring.shardingsphere.sharding.tables.t_order.key-generator.type=SNOWFLAKE
 # 指定t_order表的分片策略，分片策略包括分片键和分片算法
 spring.shardingsphere.sharding.tables.t_order.table-strategy.inline.sharding-column=order_id
-spring.shardingsphere.sharding.tables.t_order.table-strategy.inline.algorithm-expression=t_order_$‐>{order_id % 2 + 1}
+spring.shardingsphere.sharding.tables.t_order.table-strategy.inline.algorithm-expression=t_order_$->{order_id % 2 + 1}
 
 # 打开sql输出日志
 spring.shardingsphere.props.sql.show=true
