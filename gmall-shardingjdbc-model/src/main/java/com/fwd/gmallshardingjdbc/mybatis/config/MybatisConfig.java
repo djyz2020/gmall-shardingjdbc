@@ -14,23 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fwd.gmallshardingjdbc.mybatis.mapper;
+package com.fwd.gmallshardingjdbc.mybatis.config;
 
-import com.fwd.gmallshardingjdbc.mybatis.entity.MVCMybatisDemoUser;
-
-import org.apache.ibatis.annotations.Mapper;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-
+import org.mybatis.spring.annotation.MapperScan;
+import org.springframework.context.annotation.Configuration;
 
 /**
- * 指定这是一个操作数据库的mapper
+ * 使用MapperScan批量扫描所有的Mapper接口
  *
- * @author paida 派哒 zeyu.pzy@alibaba-inc.com
+ * @author haibozhang
  */
-@Mapper
-public interface MVCMybatisDemoUserMapper {
-    MVCMybatisDemoUser queryUserInfo(String id);
+@Configuration
+@MapperScan("com.fwd.gmallshardingjdbc.mybatis")
+public class MybatisConfig {
 }

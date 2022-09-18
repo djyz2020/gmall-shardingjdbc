@@ -1,6 +1,5 @@
 package com.fwd.gmallshardingjdbc.controller;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -9,10 +8,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.fwd.gmallshardingjdbc.GetUserInfoService;
 
-
-/**
- * @author paida 派哒 zeyu.pzy@alibaba-inc.com
- */
 @Controller
 public class GreetingController {
 
