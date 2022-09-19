@@ -29,8 +29,8 @@ public class OrderDaoTest {
     @Test
     public void selectOrderbyIdsTest() {
         List<Long> ids = new ArrayList<>();
-        ids.add(778435070712086528L);
-        ids.add(778435071131516929L);
+        ids.add(778884965726158848L);
+        ids.add(778884966867009537L);
         List<Map> maps = orderDao.selectOrderbyIds(ids);
         System.out.println(maps);
     }
