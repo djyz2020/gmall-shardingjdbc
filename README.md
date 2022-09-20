@@ -391,6 +391,8 @@ public void testSelectUserInfobyIds(){
 }
 ```
 
-阿里云脚手架：https://start.aliyun.com/bootstrap.html/
+<li>阿里云脚手架: https://start.aliyun.com/bootstrap.html</li>
+<li>Sharding-JDBC实战: https://blog.csdn.net/crazymakercircle/article/details/123420859</li>
+<li>Myqsql使用Sharding-JDBC配置详解: https://blog.csdn.net/ZGL_cyy/article/details/124631070</li>
 
 
