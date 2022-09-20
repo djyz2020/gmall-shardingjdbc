@@ -147,6 +147,7 @@ FLUSH PRIVILEGES;
 ```
 
 ## 5.分库分表实践
+### 5.1 水平分表（大表拆分提高查询性能，主从提高查询性能）
 #### 创建订单库 order_db
 ```
 CREATE DATABASE `order_db` CHARACTER SET 'utf8' COLLATE 'utf8_general_ci';
@@ -217,6 +218,178 @@ logging.level.root=info
 logging.level.org.springframework.web=info
 ```
 
+#### 5.2 垂直分库 (专库专用，减轻数据库压力，提高查询性能)
+##### (1) 创建数据库
+创建数据库user_db
+```
+CREATE DATABASE user_db CHARACTER SET 'utf8' COLLATE 'utf8_general_ci';
+```
+在user_db中创建t_user表
+```
+DROP TABLE IF EXISTS `t_user`;
+CREATE TABLE `t_user`  (
+  `user_id` bigint(20) NOT NULL COMMENT '用户id',
+  `fullname` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '用户姓名',
+  `user_type` char(1) DEFAULT NULL COMMENT '用户类型',
+  PRIMARY KEY (`user_id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
+```
+#### (2)在Sharding-JDBC规则中修改
+a) 新增m0数据源，对应user_db
+```
+spring.shardingsphere.datasource.names = m0,m1,m2
+spring.shardingsphere.datasource.m0.type = com.alibaba.druid.pool.DruidDataSource
+spring.shardingsphere.datasource.m0.driver‐class‐name = com.mysql.jdbc.Driver
+spring.shardingsphere.datasource.m0.url = jdbc:mysql://localhost:3306/user_db?useUnicode=true
+spring.shardingsphere.datasource.m0.username = root
+spring.shardingsphere.datasource.m0.password = root
+```
+b) t_user分表策略，固定分配至m0的t_user真实表
+```
+spring.shardingsphere.sharding.tables.t_user.actual‐data‐nodes = m$‐>{0}.t_user
+spring.shardingsphere.sharding.tables.t_user.table‐strategy.inline.sharding‐column = user_id
+spring.shardingsphere.sharding.tables.t_user.table‐strategy.inline.algorithm‐expression = t_user
+```
+c) 数据操作
+新增UserDao:
+```
+@Mapper
+@Component
+public interface UserDao {
+    /**
+     * 新增用户
+     * @param userId 用户id
+     * @param fullname 用户姓名
+     * @return
+     */
+    @Insert("insert into t_user(user_id, fullname) value(#{userId},#{fullname})")
+    int insertUser(@Param("userId")Long userId,@Param("fullname")String fullname);
+    /**
+     * 根据id列表查询多个用户
+     * @param userIds 用户id列表
+     * @return List
+     */
+    @Select({"<script>",
+            " select",
+            " * ",
+            " from t_user t ",
+            " where t.user_id in",
+            "<foreach collection='userIds' item='id' open='(' separator=',' close=')'>",
+            "#{id}",
+            "</foreach>",
+            "</script>"
+    })
+    List<Map> selectUserbyIds(@Param("userIds")List<Long> userIds);
+}
+```
+d) 测试
+新增单元测试方法：
+```
+@Test
+public void testInsertUser(){
+    for (int i = 0 ; i<10; i++){
+        Long id = i + 1L;
+        userDao.insertUser(id,"姓名"+ id );
+    }
+}
+@Test
+public void testSelectUserbyIds(){
+    List<Long> userIds = new ArrayList<>();
+    userIds.add(1L);
+    userIds.add(2L);
+    List<Map> users = userDao.selectUserbyIds(userIds);
+    System.out.println(users);
+}
+```
+#### 5.3 公共表（广播模式）
+a) 创建数据库order_db_1和order_db_2
+```
+CREATE DATABASE order_db_1 CHARACTER SET 'utf8' COLLATE 'utf8_general_ci';
+CREATE DATABASE order_db_2 CHARACTER SET 'utf8' COLLATE 'utf8_general_ci';
+```
+b) 分别在user_db、order_db_1、order_db_2中创建t_dict表：
+```
+CREATE TABLE `t_dict`  (
+  `dict_id` bigint(20) NOT NULL COMMENT '字典id',
+  `type` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '字典类型',
+  `code` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '字典编码',
+  `value` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '字典值',
+  PRIMARY KEY (`dict_id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
+```
+c) 在Sharding-JDBC规则中修改
+```
+# 指定t_dict为公共表
+spring.shardingsphere.sharding.broadcast‐tables=t_dict
+```
+d) 新增DictDao
+```
+@Mapper
+@Component
+public interface DictDao {
+    /**
+     * 新增字典
+     * @param type 字典类型
+     * @param code 字典编码
+     * @param value 字典值
+     * @return
+     */
+    @Insert("insert into t_dict(dict_id,type,code,value) value(#{dictId},#{type},#{code},#{value})")
+    int insertDict(@Param("dictId") Long dictId,@Param("type") String type, @Param("code")String code, @Param("value")String value);
+    /**
+     * 删除字典
+     * @param dictId 字典id
+     * @return
+     */
+    @Delete("delete from t_dict where dict_id = #{dictId}")
+    int deleteDict(@Param("dictId") Long dictId);
+}
+```
+e) 新增单元测试
+```
+@Test
+public void testInsertDict(){
+    dictDao.insertDict(1L,"user_type","0","管理员");    
+    dictDao.insertDict(2L,"user_type","1","操作员");    
+}
+@Test
+public void testDeleteDict(){
+    dictDao.deleteDict(1L);    
+    dictDao.deleteDict(2L);    
+}
+```
+f) 字典关联查询
+字典表已在各各分库存在，各业务表即可和字典表关联查询。
+```
+/**
+ * 根据id列表查询多个用户，关联查询字典表
+ * @param userIds 用户id列表
+ * @return
+ */
+@Select({"<script>",
+        " select",
+        " * ",
+        " from t_user t ,t_dict b",
+        " where t.user_type = b.code and t.user_id in",
+        "<foreach collection='userIds' item='id' open='(' separator=',' close=')'>",
+        "#{id}",
+        "</foreach>",
+        "</script>"
+})
+List<Map> selectUserInfobyIds(@Param("userIds")List<Long> userIds);
+```
+g) 测试方法
+```
+@Test 
+public void testSelectUserInfobyIds(){
+    List<Long> userIds = new ArrayList<>();
+    userIds.add(1L);
+    userIds.add(2L);
+    List<Map> users = userDao.selectUserInfobyIds(userIds);
+    JSONArray jsonUsers = new JSONArray(users);
+    System.out.println(jsonUsers);
+}
+```
 
 阿里云脚手架：https://start.aliyun.com/bootstrap.html/
 
