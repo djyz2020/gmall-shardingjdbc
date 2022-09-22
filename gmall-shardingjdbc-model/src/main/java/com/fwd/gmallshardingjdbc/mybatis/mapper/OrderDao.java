@@ -21,7 +21,7 @@ public interface OrderDao {
      * @return
      */
     @Insert("insert into t_order(price,user_id,status) value(#{price}, #{userId}, #{status})")
-    int insertOrder(@Param("price") BigDecimal price, @Param("userId")Long userId,
+    int insertOrder(@Param("price") Integer price, @Param("userId")Long userId,
                     @Param("status")String status);
     /**
      * 根据id列表查询多个订单

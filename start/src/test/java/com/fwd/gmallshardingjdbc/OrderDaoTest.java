@@ -21,16 +21,15 @@ public class OrderDaoTest {
 
     @Test
     public void insertOrderTest() {
-        for (int i = 0; i < 10; i++) {
-            orderDao.insertOrder(new BigDecimal((i + 1) * 5), 1L, "WAIT_PAY");
+        for (int i = 0; i < 200; i++) {
+            orderDao.insertOrder(i + 1, 1L, "WAIT_PAY");
         }
     }
 
     @Test
     public void selectOrderbyIdsTest() {
         List<Long> ids = new ArrayList<>();
-        ids.add(778884965726158848L);
-        ids.add(778884966867009537L);
+        ids.add(779848503147888640L);
         List<Map> maps = orderDao.selectOrderbyIds(ids);
         maps = orderDao.selectOrderbyIds(ids);
         maps = orderDao.selectOrderbyIds(ids);
