@@ -19,7 +19,7 @@ character-set-server=utf8      # 设置mysql服务端默认字符集
 pid-file        = /var/run/mysqld/mysqld.pid  # pid文件所在目录
 socket          = /var/run/mysqld/mysqld.sock # 用于本地连接的socket套接字
 datadir         = /var/lib/mysql              # 数据文件存放的目录
-log-error       = /var/log/mysql/error.log
+#log-error       = /var/log/mysql/error.log
 #bind-address   = 127.0.0.1                   # MySQL绑定IP
 expire_logs_days=7                            # 定义清除过期日志的时间(这里设置为7天)
 sql_mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION # 定义mysql应该支持的sql语法，数据校验等!
@@ -74,7 +74,7 @@ character-set-server=utf8      # 设置mysql服务端默认字符集
 pid-file        = /var/run/mysqld/mysqld.pid  # pid文件所在目录
 socket          = /var/run/mysqld/mysqld.sock # 用于本地连接的socket套接字
 datadir         = /var/lib/mysql              # 数据文件存放的目录
-log-error      = /var/log/mysql/error.log
+#log-error      = /var/log/mysql/error.log
 #bind-address   = 127.0.0.1                   # MySQL绑定IP
 expire_logs_days=7                            # 定义清除过期日志的时间(这里设置为7天)
 sql_mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION # 定义mysql应该支持的sql语法，数据校验等!
@@ -111,7 +111,7 @@ show master status;
 ```
 #### 2) 在slave服务器中进入mysql，启动主从同步
 ```
-docker exec -it mysql_server_3310 /bin/bash
+docker exec -it mysql_server_3311 /bin/bash
 mysql -uroot -proot
 change master to master_host='192.168.126.135',master_port=3310, master_user='slave', master_password='123456', master_log_file='mysql-bin.000003', master_log_pos=0, master_connect_retry=30;
 
